@@ -1,8 +1,12 @@
-Documentation on how to read NOAA weather data - https://www.ncei.noaa.gov/pub/data/cdo/documentation/LCD_documentation.pdf
-Obtain more weather data from New York - Central Park - https://www.ncdc.noaa.gov/cdo-web/datasets/LCD/stations/WBAN:94728/detail
-NOAA Dataset discovery - https://www.ncdc.noaa.gov/cdo-web/datasets
-<br>
-# Tests<br>
-Lin Reg T-test - Cloud coverage per day on x axis, stock price on y-axis <br>
-Matched Pairs t-test - Compare year1 and year2 average cloud coverage and see if thats different, and then use that to compare and see if there was some sort of matching change inthe stock data mean prices <br>
-Chi-square test for independence - categorize cloud coverage, categorize stock price data, check for independence <br>
+- [x] Is there an association between a country's GDP per capita and its average life expectancy?
+
+- [x] is there an association between campaign spending and number of votes recieved in national elections?
+  - [x] - Use linear regression to model the relationship between campaign spending and the number of votes received by a candidate, and construct a t-interval for the slope coefficient
+
+---
+
+- [ ] Is there an association between a city's population size/density and the proportion of reported crimes?
+
+- [ ] Is there a linear relationship between a country's military spending and its economic growth rate over time?
+
+- [ ] is there an association between the amount of research funding a university gets versus the US news ranking
