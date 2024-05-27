@@ -123,6 +123,8 @@ def plot_linreg():
     # log(y) = m*log(x) + b -- data is already log transformed
     y_vals = linreg['slope'] * x_vals + linreg['intercept']
 
+    print(f'y = {linreg["slope"]}x + {linreg["intercept"]}')
+
     plt.plot(x_vals, y_vals, color='red')
 
     plt.title('Scatter Plot of Spending vs. Votes')
@@ -193,12 +195,9 @@ def linreg_ttest():
 
     p = stats.t.sf(np.abs(t), df) * 2
 
-    # interval
-    conf = 0.95
-    interval = stats.t.interval(conf, df, loc=b1, scale=SE)
-
-    print(f'{conf * 100}% Confidence Interval: {interval}')
-
+    print(f'SE = {SE}')
+    print(f'b1 = {b1}')
+    print(f'df = {df}')
     print(f't-statistic: {t}')
     print(f'p-value: {p}')
 
