@@ -3,7 +3,8 @@ import pandas as pd
 import numpy as np
 import scipy.stats as stats
 
-CANDIDATES_CSV_PATH = 'data/candidates2.csv'
+CANDIDATES_CSV_PATH_ALL_PARTIES = 'data/candidates.csv'
+CANDIDATES_CSV_PATH_DEM_REP = 'data/candidates2.csv'
 
 
 def two_var_stats(x: pd.DataFrame, y: pd.DataFrame):
@@ -59,16 +60,19 @@ def remove_outliers(x: pd.DataFrame, y: pd.DataFrame):
     return (data['x'], data['y'])
 
 
-def load_data():
+def load_data(path: str = CANDIDATES_CSV_PATH_DEM_REP):
     """
     Load the data from the CSV file
 
     :return: a tuple of the x and y data
     """
-    data = pd.read_csv(CANDIDATES_CSV_PATH, index_col=0)
+    data = pd.read_csv(path, index_col=0)
 
-    x = data['Spending']
-    y = data['Votes']
+    x_axis = 'Spending'
+    y_axis = 'Votes'
+
+    x = data[x_axis]
+    y = data[y_axis]
 
     # apply log transformation to the data
     x_new = np.log(x)
@@ -177,25 +181,33 @@ def linreg_ttest():
     linreg = lobf(x, y)
     data_stats = two_var_stats(x, y)
 
+    # test
     b1 = linreg['slope']
     B1 = 0
+    df = len(x) - 2
 
     SE = data_stats['std_dev_resid'] / \
         (np.sqrt(len(x) - 1) * data_stats['std_dev_x'])
 
     t = (b1 - B1) / SE
 
-    p = stats.t.sf(np.abs(t), len(x) - 1) * 2
+    p = stats.t.sf(np.abs(t), df) * 2
+
+    # interval
+    conf = 0.95
+    interval = stats.t.interval(conf, df, loc=b1, scale=SE)
+
+    print(f'{conf * 100}% Confidence Interval: {interval}')
 
     print(f't-statistic: {t}')
     print(f'p-value: {p}')
 
 
 def main():
-    # plot_linreg()
-    # resid_scatter()
+    plot_linreg()
+    resid_scatter()
     resid_histo()
-    # linreg_ttest()
+    linreg_ttest()
 
 
 if __name__ == '__main__':
