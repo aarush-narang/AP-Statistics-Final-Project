@@ -9,7 +9,7 @@ CANDIDATES_CSV_PATH_DEM_REP = 'data/candidates2.csv'
 
 def two_var_stats(x: pd.DataFrame, y: pd.DataFrame):
     """
-    Estimate the mean, variance, standard deviation, and 5-number summary of the data
+    Find the mean, variance, standard deviation, and 5-number summary of the data
     :param data: a pandas DataFrame
     :return: a dictionary containing the mean, variance, standard deviation, and 5-number summary
     """
