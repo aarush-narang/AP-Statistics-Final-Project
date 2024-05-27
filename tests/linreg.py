@@ -3,27 +3,7 @@ import pandas as pd
 import numpy as np
 import scipy.stats as stats
 
-STOCK_DATA_PATH = 'data/parsed/S&P500.csv'
-WEATHER_DATA_PATH = 'data/parsed/weather.csv'
-
-
-def lobf(x, y):
-    """
-    Calculate the line of best fit for the given data.
-    :param x: x-axis data
-    :param y: y-axis data
-    :return: list of coefficients for the line of best fit - Highest degree first
-    """
-
-    slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
-
-    return {
-        'slope': slope,
-        'intercept': intercept,
-        'r_value': r_value,
-        'p_value': p_value,
-        'std_err': std_err
-    }
+CANDIDATES_CSV_PATH = 'data/candidates2.csv'
 
 
 def two_var_stats(x: pd.DataFrame, y: pd.DataFrame):
@@ -61,8 +41,161 @@ def two_var_stats(x: pd.DataFrame, y: pd.DataFrame):
     }
 
 
+def remove_outliers(x: pd.DataFrame, y: pd.DataFrame):
+    """
+    Remove outliers from the data
+    :param x: x-axis data
+    :param y: y-axis data
+    :return: a tuple of the cleaned x and y data
+    """
+    stats = two_var_stats(x, y)
+    upper_limit_y = stats['upper_limit_y']
+    lower_limit_y = stats['lower_limit_y']
+
+    # filter out the outliers - remove x and y points where y is an outlier
+    data = pd.DataFrame({'x': x, 'y': y})
+    data = data[(data['y'] <= upper_limit_y) & (data['y'] >= lower_limit_y)]
+
+    return (data['x'], data['y'])
+
+
+def load_data():
+    """
+    Load the data from the CSV file
+
+    :return: a tuple of the x and y data
+    """
+    data = pd.read_csv(CANDIDATES_CSV_PATH, index_col=0)
+
+    x = data['Spending']
+    y = data['Votes']
+
+    # apply log transformation to the data
+    x_new = np.log(x)
+    y_new = np.log(y)
+
+    # remove outliers from the data
+    (x_clean, y_clean) = remove_outliers(x_new, y_new)
+
+    return (x_clean, y_clean)
+
+
+def lobf(x: pd.DataFrame, y: pd.DataFrame):
+    """
+    Calculate the line of best fit for the given data.
+    :param x: x-axis data
+    :param y: y-axis data
+    :return: list of coefficients for the line of best fit - Highest degree first
+    """
+
+    slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
+
+    return {
+        'slope': slope,
+        'intercept': intercept,
+        'r_value': r_value,
+        'p_value': p_value,
+        'std_err': std_err
+    }
+
+
+def plot_linreg():
+    """
+    Linearity Assumption - The scatter plot of the data is straight enough to assume linearity.
+
+    Create a scatter plot of the data and overlay the line of best fit
+
+    :return: None
+    """
+    (x, y) = load_data()
+
+    linreg = lobf(x, y)
+
+    plt.scatter(x, y)
+
+    # plot the lobf given it is a log transformation
+    x_vals = np.linspace(min(x), max(x), 100)
+
+    # log(y) = m*log(x) + b -- data is already log transformed
+    y_vals = linreg['slope'] * x_vals + linreg['intercept']
+
+    plt.plot(x_vals, y_vals, color='red')
+
+    plt.title('Scatter Plot of Spending vs. Votes')
+    plt.xlabel('Spending')
+    plt.ylabel('Votes')
+    plt.show()
+
+
+def resid_scatter():
+    """
+    Equal Variance Assumption - The residuals are spread randomly around the x-axis.
+
+    Create a scatter plot of the residuals
+
+    :return: None
+    """
+    (x, y) = load_data()
+
+    y_true = y
+    y_pred = np.polyval(np.polyfit(x, y, 1), x)
+    resid = y_true - y_pred
+
+    plt.scatter(x, resid)
+    plt.title('Scatter Plot of Spending vs. Residuals')
+    plt.xlabel('Spending')
+    plt.ylabel('Residuals')
+    plt.show()
+
+
+def resid_histo():
+    """
+    Normality Assumption - The residuals are normally distributed.
+
+    Create a histogram of the residuals
+    :return: None
+    """
+    (x, y) = load_data()
+
+    y_true = y
+    y_pred = np.polyval(np.polyfit(x, y, 1), x)
+    resid = y_true - y_pred
+
+    plt.hist(resid, bins=5)
+    plt.title('Histogram of Residuals')
+    plt.xlabel('Residuals')
+    plt.ylabel('Frequency')
+    plt.show()
+
+
+def linreg_ttest():
+    """
+    Perform a t-test to determine if the slope of the line of best fit is significantly different from zero.
+    :return: None
+    """
+    (x, y) = load_data()
+    linreg = lobf(x, y)
+    data_stats = two_var_stats(x, y)
+
+    b1 = linreg['slope']
+    B1 = 0
+
+    SE = data_stats['std_dev_resid'] / \
+        (np.sqrt(len(x) - 1) * data_stats['std_dev_x'])
+
+    t = (b1 - B1) / SE
+
+    p = stats.t.sf(np.abs(t), len(x) - 1) * 2
+
+    print(f't-statistic: {t}')
+    print(f'p-value: {p}')
+
+
 def main():
-    pass
+    # plot_linreg()
+    # resid_scatter()
+    resid_histo()
+    # linreg_ttest()
 
 
 if __name__ == '__main__':
