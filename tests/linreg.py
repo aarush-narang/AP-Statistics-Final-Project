@@ -68,7 +68,7 @@ def load_data(path: str = CANDIDATES_CSV_PATH_DEM_REP):
     """
     data = pd.read_csv(path, index_col=0)
 
-    x_axis = 'Spending'
+    x_axis = 'AdjustedSpending'
     y_axis = 'Votes'
 
     x = data[x_axis]
